@@ -4,17 +4,23 @@ import pickle
 import sqlite3
 import sys
 import time
+from pathlib import Path
 
 from datasets import load_dataset
 
 from project_context.project_context import ProjectContext
 
+OUTPUT_SUBDIR = f"{Path(__file__).parent.name}/{Path(__file__).stem}"
+
+def raw_db_file_name(ctx: ProjectContext):
+    return os.path.join(ctx.data_dir, OUTPUT_SUBDIR, "raw_dataset.db")
 
 def download(ctx: ProjectContext):
     ds = load_dataset("TheFinAI/jp-chABSA")
 
     # 一旦pickleで全て保存
-    pickle_file = ctx.pickle_file
+    pickle_file = os.path.join(ctx.data_dir, OUTPUT_SUBDIR, "dataset.pkl")
+    os.makedirs(os.path.dirname(pickle_file), exist_ok=True)
     with open(pickle_file, "wb") as f:
         pickle.dump(ds, f)
 
@@ -22,7 +28,7 @@ def download(ctx: ProjectContext):
 # キーを確認する
 ##############################
 def enum_keys(ctx: ProjectContext):
-    pickle_file = ctx.pickle_file
+    pickle_file = os.path.join(ctx.data_dir, OUTPUT_SUBDIR, "dataset.pkl")
     with open(pickle_file, "rb") as f:
         ds = pickle.load(f)
 
@@ -42,7 +48,7 @@ def split_save(ctx: ProjectContext):
     # enum_keys でキーを確認してから都合の良いファイル分けで保存する
 
     # DBファイルを削除
-    raw_db_file = ctx.raw_db_file
+    raw_db_file = raw_db_file_name(ctx)
     if os.path.exists(raw_db_file):
         ctx.info(f"Removing existing SQLite DB file: {raw_db_file}")
         os.remove(raw_db_file)
@@ -62,14 +68,15 @@ def split_save(ctx: ProjectContext):
     conn.commit()
     conn.close()
 
-    pickle_file = ctx.pickle_file
+    pickle_file = os.path.join(ctx.data_dir, OUTPUT_SUBDIR, "dataset.pkl")
+    os.makedirs(os.path.dirname(pickle_file), exist_ok=True)
     with open(pickle_file, "rb") as f:
         ds = pickle.load(f)
     num_rows = ds["train"].num_rows
     ctx.info(f"Number of rows in dataset: {num_rows}")
     row_id = 1 # 加算してキーとする
     # conn = sqlite3.connect(raw_db_file)
-    with sqlite3.connect(ctx.raw_db_file) as conn:
+    with sqlite3.connect(raw_db_file_name(ctx)) as conn:
         for i in range(num_rows):
             polarity = ds["train"][i]["polarity"]
             target = ds["train"][i]["target"]
@@ -82,10 +89,10 @@ def split_save(ctx: ProjectContext):
             row_id += 1
             if (i%500 == 0):
                 ctx.info(f"Inserted {i} rows...")
-    ctx.info(f"Finished inserting {num_rows} rows into SQLite DB: {ctx.raw_db_file}")
+    ctx.info(f"Finished inserting {num_rows} rows into SQLite DB: {raw_db_file_name(ctx)}")
 
 def view_samples(ctx: ProjectContext, num_samples=5):
-    with sqlite3.connect(ctx.raw_db_file) as conn:
+    with sqlite3.connect(raw_db_file_name(ctx)) as conn:
         c = conn.cursor()
         c.execute("SELECT row_id, polarity, target, sentence FROM chABSA LIMIT ?", (num_samples,))
         rows = c.fetchall()
@@ -109,8 +116,8 @@ def main():
 main()
 
 """
-python data/download_chABSA.py download
-python data/download_chABSA.py enum_keys
-python data/download_chABSA.py split_save
-python data/download_chABSA.py sample
+python src/feature_apis/dataset/download_chABSA.py download
+python src/feature_apis/dataset/download_chABSA.py enum_keys
+python src/feature_apis/dataset/download_chABSA.py split_save
+python src/feature_apis/dataset/download_chABSA.py sample
 """

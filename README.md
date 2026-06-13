@@ -55,6 +55,16 @@ python src/feature_apis/normalize/normalize.py view_samples
 python src/feature_apis/tokenize/benchmark_vocab_size/benchmark_vocab_size.py
 
 # data/benchmark_vocab_size にモデルとトークナイザのベンチマーク結果が保存される
+# ベンチマークの結果を参考に、tokenize.py の vocab_size を適切な値に設定する
+python src/feature_apis/tokenize/tokenize.py 2959
+```
+
+## まとめ
+```bash
+python src/feature_apis/dataset/download_chABSA.py download
+python src/feature_apis/dataset/download_chABSA.py split_save
+python src/feature_apis/normalize/normalize.py normalize
+python src/feature_apis/tokenize/sp_tokenize.py 2959
 ```
 
 # ここまで前処理

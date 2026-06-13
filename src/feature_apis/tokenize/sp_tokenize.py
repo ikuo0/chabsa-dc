@@ -6,15 +6,17 @@ from pathlib import Path
 
 import sentencepiece
 
+from feature_apis.normalize.normalize import normalized_db_file_name
 from project_context.project_context import ProjectContext
 
+# tokenize.py だとライブラリ名と衝突し再帰的に import されてしまうため、ファイル名を sp_tokenize.py にする
 
 OUTPUT_SUBDIR = f"{Path(__file__).parent.name}/{Path(__file__).stem}"
 
 
 def create_all_text_file(ctx: ProjectContext, out_dir: str):
     # db_file = ctx.raw_db_file
-    db_file = ctx.normalized_db_file
+    db_file = normalized_db_file_name(ctx)
     with sqlite3.connect(db_file) as conn:
         c = conn.cursor()
         c.execute("SELECT sentence FROM chABSA")
@@ -202,6 +204,6 @@ if __name__ == "__main__":
     main()
 
 """
-python src/feature_apis/tokenize/tokenize.py <vocab_size>
-python src/feature_apis/tokenize/tokenize.py 2959
+python src/feature_apis/tokenize/sp_tokenize.py <vocab_size>
+python src/feature_apis/tokenize/sp_tokenize.py 2959
 """

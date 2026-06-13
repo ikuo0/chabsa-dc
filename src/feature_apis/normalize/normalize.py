@@ -4,6 +4,7 @@ import sqlite3
 import sys
 import unicodedata
 from pathlib import Path
+from feature_apis.dataset.download_chABSA import raw_db_file_name
 
 from project_context.project_context import ProjectContext
 
@@ -237,9 +238,12 @@ def unify_quotes(s: str) -> str:
 
     return s
 
+def normalized_db_file_name(ctx: ProjectContext):
+    return os.path.join(ctx.data_dir, OUTPUT_SUBDIR, "normalized_dataset.db")
+
 def create_normalized_db(ctx: ProjectContext):
     # normalized_db_file の削除
-    normalized_db_file = ctx.normalized_db_file
+    normalized_db_file = normalized_db_file_name(ctx)
     if os.path.exists(normalized_db_file):
         ctx.info(f"Removing existing normalized DB file: {normalized_db_file}")
         os.remove(normalized_db_file)
@@ -298,13 +302,15 @@ def execute_normalize(ctx: ProjectContext):
     create_normalized_db(ctx)
 
     # raw_db_file を読み込んで正規化後に normalized_db_file に保存する
-    with sqlite3.connect(ctx.raw_db_file) as read_conn:
+    raw_db_file = raw_db_file_name(ctx)
+    normalized_db_file = normalized_db_file_name(ctx)
+    with sqlite3.connect(raw_db_file) as read_conn:
         # 件数を取得、進捗表示する
         read_c = read_conn.cursor()
         read_c.execute("SELECT COUNT(*) FROM chABSA")
         total_rows = read_c.fetchone()[0]
         ctx.info(f"Total rows to normalize: {total_rows}")
-        with sqlite3.connect(ctx.normalized_db_file) as write_conn:
+        with sqlite3.connect(normalized_db_file) as write_conn:
             read_c = read_conn.cursor()
             write_c = write_conn.cursor()
 
@@ -325,7 +331,8 @@ def execute_normalize(ctx: ProjectContext):
     ctx.info("Finished normalization process.")
 
 def execute_view_samples(ctx: ProjectContext, num_samples=5):
-    with sqlite3.connect(ctx.raw_db_file) as raw_conn:
+    raw_db_file = raw_db_file_name(ctx)
+    with sqlite3.connect(raw_db_file) as raw_conn:
         raw_c = raw_conn.cursor()
         raw_c.execute(
             """
@@ -345,7 +352,8 @@ def execute_view_samples(ctx: ProjectContext, num_samples=5):
     row_ids = [row[0] for row in raw_rows]
     placeholders = ",".join("?" for _ in row_ids)
 
-    with sqlite3.connect(ctx.normalized_db_file) as normalized_conn:
+    normalized_db_file = normalized_db_file_name(ctx)
+    with sqlite3.connect(normalized_db_file) as normalized_conn:
         normalized_c = normalized_conn.cursor()
         normalized_c.execute(
             f"""
@@ -382,7 +390,8 @@ def export_samples(ctx: ProjectContext, num_samples=5, out_file="normalized_samp
     # TSV で出力する
     out_path = os.path.join(ctx.data_dir, OUTPUT_SUBDIR, out_file)
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
-    with sqlite3.connect(ctx.normalized_db_file) as conn:
+    normalized_db_file = normalized_db_file_name(ctx)
+    with sqlite3.connect(normalized_db_file) as conn:
         c = conn.cursor()
         c.execute(
             """

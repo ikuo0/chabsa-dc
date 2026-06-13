@@ -39,7 +39,7 @@ def main():
     sum_rows = []
     for size in size_list:
         ctx.info(f"Tokenizing with vocab size {size}...")
-        row = tokenize(ctx, sentences_file, f"spm_{size}", size)
+        row = tokenize(ctx, sentences_file, size)
         sum_rows.append(row)
 
     ctx.info("Finished benchmark for vocab size.")
@@ -65,5 +65,5 @@ if __name__ == "__main__":
     main()
 
 """
-python src/feature_apis/tokenize/benchmark_vocab_size.py
+python src/feature_apis/tokenize/benchmark_vocab_size/benchmark_vocab_size.py
 """
