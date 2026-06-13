@@ -15,6 +15,13 @@ git init
 
 ```
 
+# gitパスワード入力を省略
+```bash
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
+# 以降、git push などでパスワード入力が不要になる
+```
+
 # 実行順序
 ## chABSA ダウンロード
 

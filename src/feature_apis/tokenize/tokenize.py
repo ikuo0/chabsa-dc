@@ -1,6 +1,6 @@
-
 import os
 import sqlite3
+import sys
 from collections import Counter
 from pathlib import Path
 
@@ -8,12 +8,9 @@ import sentencepiece
 
 from project_context.project_context import ProjectContext
 
-"""
-プロジェクトのカレントディレクトリから実行する前提です
-本ファイルまで cd する必要はありません
-"""
 
 OUTPUT_SUBDIR = f"{Path(__file__).parent.name}/{Path(__file__).stem}"
+
 
 def create_all_text_file(ctx: ProjectContext, out_dir: str):
     # db_file = ctx.raw_db_file
@@ -29,10 +26,7 @@ def create_all_text_file(ctx: ProjectContext, out_dir: str):
             f.write(sentence + "\n")
     return sentences_file
 
-"""
-# row_id(int), polarity(string), target(string), sentence(string)
-# SELECT row_id, polarity, target, sentence FROM chABSA
-"""
+
 def tokenize(ctx: ProjectContext, sentences_file: str, vocab_size: int):
     ctx.info(f"Training SentencePiece model with vocab size {vocab_size}...")
 
@@ -139,14 +133,18 @@ def tokenize(ctx: ProjectContext, sentences_file: str, vocab_size: int):
         avg_token_per_char,
     ]
 
+
 def round_f3(x):
     return round(x, 3)
+
 
 def round_row(row):
     return [round_f3(x) if isinstance(x, float) else x for x in row]
 
+
 def round_rows(rows):
     return [round_row(row) for row in rows]
+
 
 def save_tsv(header, rows, out_file):
     with open(out_file, "w", encoding="utf-8") as f:
@@ -159,53 +157,50 @@ def save_tsv(header, rows, out_file):
             row_str = "\t".join(str(x) for x in row)
             f.write(row_str + "\n")
 
+
 def main():
+    if len(sys.argv) < 2:
+        print("Usage: python src/feature_apis/tokenize/tokenize.py <vocab_size>")
+        sys.exit(1)
+
+    try:
+        vocab_size = int(sys.argv[1])
+    except ValueError:
+        print(f"Invalid vocab_size: {sys.argv[1]}")
+        print("vocab_size must be an integer.")
+        sys.exit(1)
+
     ctx = ProjectContext()
-    ctx.info("Starting benchmark for vocab size...")
     out_dir = os.path.join(ctx.data_dir, OUTPUT_SUBDIR)
     os.makedirs(out_dir, exist_ok=True)
+
     sentences_file = create_all_text_file(ctx, out_dir)
-    # size_list = [100, 200, 400, 800, 1600]
-    minimum = 1359 # 少なすぎるとエラーになるので、エラー時に出てきた最小数を指定しておく
-    size_list = [
-        0 + minimum,
-        100 + minimum,
-        200 + minimum,
-        400 + minimum,
-        800 + minimum,
-        1600 + minimum,
-        3200 + minimum,
-        6400 + minimum,
+    row = tokenize(ctx, sentences_file, vocab_size)
+
+    header = [
+        "Vocab Size",
+        "Actual Vocab Size",
+        "Token Count",
+        "Char Count",
+        "Sentence Count",
+        "UNK Count",
+        "UNK Rate",
+        "Used Pieces",
+        "Used Pieces Excl. Special Tokens",
+        "Used Vocab Rate",
+        "Avg Token/Sentence",
+        "Avg Token/Char",
     ]
+    rounded_rows = round_rows([[vocab_size, *row]])
+    out_file = os.path.join(out_dir, f"tokenize_result_{vocab_size}.tsv")
+    save_tsv(header, rounded_rows, out_file)
+    ctx.info(f"Saved result TSV: {out_file}")
 
-    sum_rows = []
-    for size in size_list:
-        ctx.info(f"Tokenizing with vocab size {size}...")
-        row = tokenize(ctx, sentences_file, size)
-        sum_rows.append(row)
-
-    ctx.info("Finished benchmark for vocab size.")
-
-    # show results
-    ctx.info("Results:")
-    header = "Vocab Size, Actual Vocab Size, Token Count, Char Count, Sentence Count, UNK Count, UNK Rate, Used Pieces, Used Pieces Excl. Special Tokens, Used Vocab Rate, Avg Token/Sentence, Avg Token/Char"
-    ctx.info(header)
-    rounded_rows = round_rows([
-        [size, *row] for size, row in zip(size_list, sum_rows)
-    ])
-    for row in rounded_rows:
-        row_str = ", ".join(str(x) for x in row)
-        ctx.info(row_str)
-
-    save_tsv(
-        header.split(", "),
-        rounded_rows,
-        os.path.join(out_dir, "benchmark_results.tsv")
-    )
 
 if __name__ == "__main__":
     main()
 
 """
-python src/feature_apis/tokenize/benchmark_vocab_size/benchmark_vocab_size.py
+python src/feature_apis/tokenize/tokenize.py <vocab_size>
+python src/feature_apis/tokenize/tokenize.py 2959
 """
