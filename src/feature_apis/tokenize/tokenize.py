@@ -27,12 +27,13 @@ def create_all_text_file(ctx: ProjectContext, out_dir: str):
     return sentences_file
 
 
-def tokenize(ctx: ProjectContext, sentences_file: str, vocab_size: int):
+def tokenize(ctx: ProjectContext, sentences_file: str, file_prefix: str, vocab_size: int):
     ctx.info(f"Training SentencePiece model with vocab size {vocab_size}...")
 
     model_prefix = os.path.join(
         os.path.dirname(sentences_file),
-        f"spm_{vocab_size}"
+        f"{file_prefix}"
+
     )
 
     sentencepiece.SentencePieceTrainer.train(
@@ -175,7 +176,7 @@ def main():
     os.makedirs(out_dir, exist_ok=True)
 
     sentences_file = create_all_text_file(ctx, out_dir)
-    row = tokenize(ctx, sentences_file, vocab_size)
+    row = tokenize(ctx, sentences_file, "spm", vocab_size)
 
     header = [
         "Vocab Size",
@@ -192,7 +193,7 @@ def main():
         "Avg Token/Char",
     ]
     rounded_rows = round_rows([[vocab_size, *row]])
-    out_file = os.path.join(out_dir, f"tokenize_result_{vocab_size}.tsv")
+    out_file = os.path.join(out_dir, f"tokenize_result.tsv")
     save_tsv(header, rounded_rows, out_file)
     ctx.info(f"Saved result TSV: {out_file}")
 

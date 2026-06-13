@@ -39,7 +39,7 @@ def main():
     sum_rows = []
     for size in size_list:
         ctx.info(f"Tokenizing with vocab size {size}...")
-        row = tokenize(ctx, sentences_file, size)
+        row = tokenize(ctx, sentences_file, f"spm_{size}", size)
         sum_rows.append(row)
 
     ctx.info("Finished benchmark for vocab size.")

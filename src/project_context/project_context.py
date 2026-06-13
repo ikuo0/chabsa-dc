@@ -40,6 +40,9 @@ class ProjectContext:
         self.normalized_db_file = f"{self.data_dir}/chABSA/chABSA_normalized.db"
         self.experiment_outdir = f"{self.data_dir}/experiments"
         self.log_outdir = f"/tmp"
+
+        self.vocab_model_file = "data/tokenize/tokenize/spm.model"
+        self.vocab_file = "data/tokenize/tokenize/spm.vocab"
         self.logger = setup_logger(outdir=self.log_outdir, log_filename="experiment.log")
 
     def info(self, msg):

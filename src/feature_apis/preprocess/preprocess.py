@@ -1,4 +1,4 @@
-
+import sentencepiece
 from project_context.project_context import ProjectContext
 import sqlite3
 
@@ -12,14 +12,19 @@ def load_xy(ctx: ProjectContext):
     y = [row[0] for row in data]
     return X, y
 
-def load_vocab(ctx: ProjectContext):
-    db_file = ctx.normalized_db_file
-    with sqlite3.connect(db_file) as conn:
-        c = conn.cursor()
-        c.execute("SELECT sentence FROM chABSA")
-        sentences = [row[0] for row in c.fetchall()]
-    vocab = set()
-    for sentence in sentences:
-        for word in sentence.split():
-            vocab.add(word)
+def load_spm_model(ctx: ProjectContext):
+    spm_model = sentencepiece.SentencePieceProcessor()
+    spm_model.load(ctx.vocab_model_file)
+    return spm_model
+
+def load_spm_vocab(ctx: ProjectContext):
+    with open(ctx.vocab_file, "r", encoding="utf-8") as f:
+        vocab = [line.strip() for line in f.readlines()]
     return vocab
+
+def load_spm(ctx: ProjectContext):
+    spm_model = load_spm_model(ctx)
+    vocab = load_spm_vocab(ctx)
+    return spm_model, vocab
+
+
