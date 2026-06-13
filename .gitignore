@@ -1,0 +1,15 @@
+# project
+data
+
+# python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite
+*.log
+*.egg-info/
+dist/
+build/

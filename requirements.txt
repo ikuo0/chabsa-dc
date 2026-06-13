@@ -1,0 +1,7 @@
+
+# scikit, datasets
+datasets
+scikit-learn
+numpy
+scipy
+sentencepiece
