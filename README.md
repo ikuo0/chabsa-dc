@@ -32,6 +32,7 @@ ssh-add ~/.ssh/id_ed25519
 
 
 # 環境メモ
+Windowsホスト+devcontainer+GPU 条件で tensorflow + GPU を動作させる
 tensorflow + GPU は現在は python3.11~3.12 でしか動作しない、python3.13では動作しない
 Linux、WSL等の環境にマッチした cuda ドライバをインストールする必要がある
 activate_tf_gpu.sh を実行し、GPU有効にする必要がある
