@@ -24,59 +24,14 @@ ssh-add ~/.ssh/id_ed25519
 # 以降、git push などでパスワード入力が不要になる
 ```
 
-# 実行順序
-## chABSA ダウンロード
-
-```bash
-# プロジェクトディレクトリから実行
-python src/feature_apis/dataset/download_chABSA.py download
-python src/feature_apis/dataset/download_chABSA.py enum_keys
-python src/feature_apis/dataset/download_chABSA.py split_save
-python src/feature_apis/dataset/download_chABSA.py sample
-
-# download して enum_keys でキー等を確認
-# split_save で SQLite DB に保存（data/chABSA/chABSA.db）
-# sample でサンプルデータを閲覧
-```
-
-## 正規化
-
-```bash
-# プロジェクトディレクトリから実行
-python src/feature_apis/normalize/normalize.py normalize
-python src/feature_apis/normalize/normalize.py view_samples
-
-# normalize で正規化処理を実行、SQLiteに保存される（data/chABSA/chABSA_normalized.db）
-# view_samples で正規化前後のサンプルを閲覧
-```
-
-## トークナイズとベンチマーク
-
-```bash
-# プロジェクトディレクトリから実行
-python src/feature_apis/tokenize/benchmark_vocab_size/benchmark_vocab_size.py
-
-# data/benchmark_vocab_size にモデルとトークナイザのベンチマーク結果が保存される
-# ベンチマークの結果を参考に、tokenize.py の vocab_size を適切な値に設定する
-python src/feature_apis/tokenize/tokenize.py 2959
-```
-
-## まとめ
-```bash
-python src/feature_apis/dataset/download_chABSA.py download
-python src/feature_apis/dataset/download_chABSA.py split_save
-python src/feature_apis/normalize/normalize.py normalize
-python src/feature_apis/tokenize/sp_tokenize.py 2959
-```
-
-# ここまで前処理
+# AI向けドキュメントについて
+フォルダ：document にAI指示用のプロンプトを作成
+ユースケース毎にファイルを作成しＡＩにコードを作成させる
+対話AIが作成できない場合は自作する
+距離重み付きONE-HOTのベクトル化関数は対話ＡＩが作成できなかったため自作としている
 
 
-# BoW
-# BoW + TF-IDF
-# Word2Vec 平均
-# Word2Vec TF-IDF 加重平均
-# Word2Vec クラスタ分布
-# 【独自】文脈ベクトルクラスタ分布（位置重み無し）
-# 【独自】文脈ベクトルクラスタ分布（位置重み有り）
-
+# 環境メモ
+tensorflow + GPU は現在は python3.11~3.12 でしか動作しない、python3.13では動作しない
+Linux、WSL等の環境にマッチした cuda ドライバをインストールする必要がある
+activate_tf_gpu.sh を実行し、GPU有効にする必要がある
