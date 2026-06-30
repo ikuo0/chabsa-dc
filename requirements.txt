@@ -6,3 +6,5 @@ numpy
 scipy
 sentencepiece
 pytest
+matplotlib
+tensorflow[and-cuda]==2.21.0

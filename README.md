@@ -5,6 +5,8 @@
 python -m venv /opt/venvs/.venv
 source /opt/venvs/.venv/bin/activate
 export PYTHONPATH=$(pwd)/src:$PYTHONPATH
+source ./activate_tf_gpu.sh
+export PROJECT_ROOT_DIR=/workspaces/chabsa-document-classification
 
 python -m pip install --upgrade pip
 pip install -r requirements.txt

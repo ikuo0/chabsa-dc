@@ -1,5 +1,5 @@
 # project
-data
+data/
 
 # python
 .venv/
@@ -13,3 +13,8 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+logs/
+chatgpt_log/
+src/old/
+src/old2/
+.pytest_cache/

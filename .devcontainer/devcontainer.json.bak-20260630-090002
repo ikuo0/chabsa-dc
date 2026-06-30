@@ -1,5 +1,5 @@
 {
-  "name": "Python 3.12 TensorFlow GPU",
+  "name": "Python 3.13",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
   "mounts": [
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
@@ -19,21 +19,12 @@
   "features": {
     "ghcr.io/devcontainers/features/git-lfs:1": {},
     "ghcr.io/devcontainers/features/common-utils:2": {},
-    "ghcr.io/devcontainers/features/python:1": {
-      "version": "3.12"
-    },
+    "ghcr.io/devcontainers/features/python:1": { "version": "3.13" },
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
       "moby": false,
       "installDockerBuildx": true,
       "installDockerComposeSwitch": true
     }
   },
-  "containerEnv": {
-    "NVIDIA_VISIBLE_DEVICES": "all",
-    "NVIDIA_DRIVER_CAPABILITIES": "compute,utility"
-  },
-  "runArgs": [
-    "--add-host=host.docker.internal:host-gateway",
-    "--gpus=all"
-  ]
+  "runArgs": ["--add-host=host.docker.internal:host-gateway"]
 }
